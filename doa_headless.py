@@ -83,8 +83,23 @@ def main():
     receiver.daq_rx_gain = args.gain
 
     if not getattr(receiver, "in_shmem_iface", None) or not receiver.in_shmem_iface.init_ok:
-        print("cannot attach to delay_sync_iq -- is the DAQ chain running?", file=sys.stderr)
-        print("(the chain publishes delay_sync_iq only once delay_sync.py is up)", file=sys.stderr)
+        # Distinguish "the DAQ is not running" from "it is, but not as this user".
+        # The second is the common one and the underlying error is an errno inside
+        # a log line, so name it outright.
+        fifo = os.path.join(receiver.daq_shmem_control_path, "bw_delay_sync_iq")
+        if os.path.exists(fifo) and not os.access(fifo, os.W_OK):
+            import pwd
+            try:
+                owner = pwd.getpwuid(os.stat(fifo).st_uid).pw_name
+            except KeyError:
+                owner = str(os.stat(fifo).st_uid)
+            print(f"cannot attach to delay_sync_iq: {fifo} is not writable by "
+                  f"{__import__('getpass').getuser()}", file=sys.stderr)
+            print(f"the DAQ chain created it as '{owner}' -- run this as the same user,"
+                  " or run the DAQ chain as this one.", file=sys.stderr)
+        else:
+            print("cannot attach to delay_sync_iq -- is the DAQ chain running?", file=sys.stderr)
+            print("(the chain publishes delay_sync_iq only once delay_sync.py is up)", file=sys.stderr)
         return 2
 
     processor = SignalProcessor(data_que=sp_que, module_receiver=receiver, logging_level=level)
