@@ -4,7 +4,9 @@ from variables import tak_folder_exists
 
 layout = html.Div(
     [
-        dcc.Location(id="url", children="/config", refresh=True),
+        # Dash 2.x: dcc.Location no longer accepts `children`; the initial route is
+        # taken from pathname instead.
+        dcc.Location(id="url", pathname="/config", refresh=True),
         html.Div(
             [
                 html.Img(

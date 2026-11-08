@@ -19,6 +19,11 @@
 # - coding: utf-8 -*-
 
 # isort: off
+# Must come first: it installs the Werkzeug shim dash_devices needs and the
+# pre-2.0 dash_core_components/dash_html_components aliases, both of which have
+# to be in place before maindash (and the views/callbacks) import them.
+import dash_compat  # noqa: F401,E402
+
 from maindash import app
 
 # isort: on

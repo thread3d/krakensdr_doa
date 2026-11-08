@@ -7,3 +7,6 @@ _share/
 settings.json*
 *.patch
 *.bak
+
+# Runtime recording files written by the signal processor
+mydata.csv
